@@ -1,13 +1,9 @@
-// disable useless warnings
-#pragma warning disable CS4014,CS1998
-
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Discord;
-using Discord.API;
 using Discord.WebSocket;
 
 namespace OrangeBot
@@ -17,6 +13,7 @@ namespace OrangeBot
         private DiscordSocketClient _Client { get; set; }
         private Emoji _PinEmote { get; set; }
         private List<ulong> _PinnedMessages { get; set; }
+        private object _PinnedMessagesLock { get; set; }
         private int _PinEmoteCount { get; set; }
 
         private ulong _GuildId { get; set; }
@@ -29,12 +26,13 @@ namespace OrangeBot
 
         private int _DictionaryLimit { get; set; }
 
-        private Dictionary<ulong, IMessage> _Messages { get; set; }
+        private ConcurrentDictionary<ulong, IMessage> _Messages { get; set; }
         public OrangeBot()
         {
             _Client = new DiscordSocketClient();
             _PinEmote = new Emoji("📌");
             _PinnedMessages = new List<ulong>();
+            _PinnedMessagesLock = new object();
             _PinEmoteCount = 4;
 
             _GuildId = 0;
@@ -44,8 +42,8 @@ namespace OrangeBot
             // this consumes ~400 MB of RAM
             _DictionaryLimit = 10000000;
 
-            _Messages = new Dictionary<ulong, IMessage>();
->>>>>>> e9a0a22... update
+
+            _Messages = new ConcurrentDictionary<ulong, IMessage>();
 
             BotMain().GetAwaiter().GetResult();
         }
@@ -54,6 +52,7 @@ namespace OrangeBot
         {
             string token = "";
 
+            // hook up all events
             _Client.Log += _Log;
             _Client.ReactionAdded += _OnReactionAdded;
             _Client.MessageDeleted += _OnMessageDeleted;
@@ -113,10 +112,10 @@ namespace OrangeBot
             {
                 try
                 {
-                    foreach (IMessage message in channel.GetMessagesAsync(1000).FlattenAsync().Result)
-                    {
-                        _Messages.Add(message.Id, message);
-                    }
+                    IEnumerable<IMessage> messages =
+                        await channel.GetMessagesAsync(1000).FlattenAsync();
+
+                    messages.ToList().ForEach(m => _Messages[m.Id] = m);
                 }
                 catch (Exception)
                 {
@@ -127,7 +126,7 @@ namespace OrangeBot
 
         private async Task _OnUserJoined(SocketGuildUser user)
         {
-            _SendEmbed(new EmbedBuilder()
+            await _SendEmbed(new EmbedBuilder()
             {
                 Author = new EmbedAuthorBuilder() { Name = user.Username, IconUrl = user.GetAvatarUrl() },
                 Description = "User joined",
@@ -138,7 +137,7 @@ namespace OrangeBot
 
         private async Task _OnUserLeft(SocketGuildUser user)
         {
-            _SendEmbed(new EmbedBuilder()
+            await _SendEmbed(new EmbedBuilder()
             {
                 Author = new EmbedAuthorBuilder() { Name = user.Username, IconUrl = user.GetAvatarUrl() },
                 Description = "User left",
@@ -149,7 +148,7 @@ namespace OrangeBot
 
         private async Task _OnUserBanned(SocketUser user, SocketGuild guild)
         {
-            _SendEmbed(new EmbedBuilder()
+            await _SendEmbed(new EmbedBuilder()
             {
                 Author = new EmbedAuthorBuilder() { Name = user.Username, IconUrl = user.GetAvatarUrl() },
                 Description = "User banned",
@@ -160,7 +159,7 @@ namespace OrangeBot
 
         private async Task _OnUserUnbanned(SocketUser user, SocketGuild guild)
         {
-            _SendEmbed(new EmbedBuilder()
+            await _SendEmbed(new EmbedBuilder()
             {
                 Author = new EmbedAuthorBuilder() { Name = user.Username, IconUrl = user.GetAvatarUrl() },
                 Description = "User unbanned",
@@ -171,6 +170,9 @@ namespace OrangeBot
 
         private async Task _OnBulkMessagesDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> arg1, ISocketMessageChannel arg2)
         {
+            // just to make the warning go away
+            await Task.Run(() => null);
+
             // TODO? from log:
             // [Discord.Net] A bulk delete event has been received, 
             // but the event handling behavior has not been set. 
@@ -178,21 +180,23 @@ namespace OrangeBot
             // This message will appear only once.
         }
 
-        private async Task _OnMessageUpdated(Cacheable<IMessage, ulong> message, SocketMessage sMessage, ISocketMessageChannel channel)
+        private Task _OnMessageUpdated(Cacheable<IMessage, ulong> message, SocketMessage sMessage, ISocketMessageChannel channel)
         {
-            if (!_Messages.ContainsKey(sMessage.Id))
-                _Messages.Add(sMessage.Id, sMessage);
-            else
+            Task.Run(() =>
+            {
                 _Messages[sMessage.Id] = sMessage;
+            });
+
+            return Task.CompletedTask;
         }
 
         private async Task _OnMessageReceived(SocketMessage message)
         {
-            //  let's strip the Dictionary once we reach the limit
+            // let's strip the Dictionary once we reach the limit
             if (_Messages.Count >= _DictionaryLimit)
-                _QueryMessages(true);
+                await _QueryMessages(true);
             else
-                _Messages.Add(message.Id, message);
+                _Messages[message.Id] = message;
         }
 
         private async Task _OnMessageDeleted(Cacheable<IMessage, ulong> message1, ISocketMessageChannel channel)
@@ -211,7 +215,7 @@ namespace OrangeBot
                 && message.Attachments.Count == 0)
                 return;
 
-            _SendEmbed(new EmbedBuilder()
+            await _SendEmbed(new EmbedBuilder()
             {
                 Author = new EmbedAuthorBuilder() { Name = message.Author.Username, IconUrl = message.Author.GetAvatarUrl() },
                 Description = message.Content,
@@ -219,7 +223,6 @@ namespace OrangeBot
                 Timestamp = message.Timestamp,
                 Footer = new EmbedFooterBuilder() { Text = $"deleted • #{channel.Name}" }
             }, _AuditLogChannel);
-
         }
 
         private async Task _OnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
@@ -239,22 +242,31 @@ namespace OrangeBot
             if (msg.Timestamp <= DateTime.Now.AddHours(-24))
                 return;
 
-            int emoteCount = msg.GetReactionUsersAsync(_PinEmote, _PinEmoteCount, null).FlattenAsync().Result.Count();
+            int emoteCount = (await msg.GetReactionUsersAsync(_PinEmote, _PinEmoteCount).FlattenAsync()).Count();
 
-            if (emoteCount >= _PinEmoteCount
-                && !_PinnedMessages.Contains(message.Id))
+            lock (_PinnedMessagesLock)
             {
-                _SendEmbed(new EmbedBuilder()
+                if (emoteCount < _PinEmoteCount
+                    || _PinnedMessages.Contains(message.Id))
                 {
-                    Author = new EmbedAuthorBuilder() { Name = msg.Author.Username, IconUrl = msg.Author.GetAvatarUrl() },
-                    Description = msg.Content,
-                    ImageUrl = msg.Attachments.Count != 0 ? msg.Attachments.First().ProxyUrl : null,
-                    Timestamp = msg.Timestamp,
-                    Footer = new EmbedFooterBuilder() { Text = message.Id.ToString() }
-                }, _PinMessageChannel);
+                    return;
+                }
+            }
+            
+            await _SendEmbed(new EmbedBuilder()
+            {
+                Author = new EmbedAuthorBuilder() { Name = msg.Author.Username, IconUrl = msg.Author.GetAvatarUrl() },
+                Description = msg.Content,
+                ImageUrl = msg.Attachments.Count != 0 ? msg.Attachments.First().ProxyUrl : null,
+                Timestamp = msg.Timestamp,
+                Footer = new EmbedFooterBuilder() { Text = message.Id.ToString() }
+            }, _PinMessageChannel);
 
+            lock (_PinnedMessagesLock)
+            {
                 _PinnedMessages.Add(message.Id);
             }
+
         }
 
         // sends Embed to channel
