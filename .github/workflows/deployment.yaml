@@ -28,6 +28,9 @@ jobs:
         
     - name: Update kubernetes deployment file
       run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|tim241/orangebot:'${TAG}'|' $GITHUB_WORKSPACE/OrangeBotDeployment.yaml
+    
+    - name: Update kubernetes deployment docker pass
+      run: sed -i 's|<KUBEDOCKERPASS>|'${{ secrets.KUBERNETES_DOCKER_AUTH }}'|' $GITHUB_WORKSPACE/OrangeBotDeployment.yaml
       
     - name: Pull DigitalOcean kubeconfig
       uses: digitalocean/action-doctl@master
