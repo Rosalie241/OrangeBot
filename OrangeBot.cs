@@ -197,12 +197,6 @@ namespace OrangeBot
                 await _QueryMessages(true);
             else
                 _Messages[message.Id] = message;
-
-            if(message.Content == "%ping" &&
-                message.Channel.Id == 624352954291453963)
-            {
-                await message.Channel.SendMessageAsync("pong");
-            }
         }
 
         private async Task _OnMessageDeleted(Cacheable<IMessage, ulong> message1, ISocketMessageChannel channel)
