@@ -25,3 +25,5 @@ spec:
       containers:
         - name: orangebot
           image: <IMAGE>
+          imagePullSecrets:
+            - name: orangebot-dockerkey
