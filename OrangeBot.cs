@@ -285,7 +285,7 @@ namespace OrangeBot
             lock (_PinnedMessagesLock)
             {
                 if (emoteCount < _PinEmoteCount
-                    && !_PinnedMessages.Contains(message.Id))
+                    || _PinnedMessages.Contains(message.Id))
                 {
                     return;
                 }
@@ -304,7 +304,6 @@ namespace OrangeBot
             {
                 _PinnedMessages.Add(message.Id);
             }
-
         }
 
         // sends Embed to channel
