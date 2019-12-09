@@ -206,6 +206,10 @@ namespace OrangeBot
 
             IMessage message = _Messages[message1.Id];
 
+            // return when invalid Guild
+            if (((SocketGuildChannel)channel).Guild.Id != _Guild.Id)
+                return;
+
             // return when invalid Author
             if (message.Author.Id == 0)
                 return;
@@ -217,10 +221,10 @@ namespace OrangeBot
 
             // HACK!!
             string content = message.Content;
-            foreach(Attachment a in message.Attachments)
+            foreach (Attachment a in message.Attachments)
             {
                 string extension = a.Filename.Split('.').Last().ToLower();
-                switch(extension)
+                switch (extension)
                 {
                     case "gif":
                     case "jpg":
@@ -239,7 +243,7 @@ namespace OrangeBot
             {
                 Author = new EmbedAuthorBuilder() { Name = _GetUserName(message.Author), IconUrl = message.Author.GetAvatarUrl() },
                 Description = content,
-                ImageUrl = message.Attachments.Count != 0 ? message.Attachments.First().ProxyUrl : null, 
+                ImageUrl = message.Attachments.Count != 0 ? message.Attachments.First().ProxyUrl : null,
                 Timestamp = message.Timestamp,
                 Footer = new EmbedFooterBuilder() { Text = $"deleted • #{channel.Name}" }
             }, _AuditLogChannel);
@@ -267,12 +271,12 @@ namespace OrangeBot
             lock (_PinnedMessagesLock)
             {
                 if (emoteCount < _PinEmoteCount
-                    || _PinnedMessages.Contains(message.Id))
+                    && !_PinnedMessages.Contains(message.Id))
                 {
                     return;
                 }
             }
-            
+
             await _SendEmbed(new EmbedBuilder()
             {
                 Author = new EmbedAuthorBuilder() { Name = _GetUserName(msg.Author), IconUrl = msg.Author.GetAvatarUrl() },
