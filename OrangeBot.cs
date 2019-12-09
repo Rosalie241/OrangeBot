@@ -139,7 +139,7 @@ namespace OrangeBot
         {
             await _SendEmbed(new EmbedBuilder()
             {
-                Author = new EmbedAuthorBuilder() { Name = user.Username, IconUrl = user.GetAvatarUrl() },
+                Author = new EmbedAuthorBuilder() { Name = _GetUserName(user), IconUrl = user.GetAvatarUrl() },
                 Description = "User left",
                 Timestamp = DateTime.Now,
                 Footer = new EmbedFooterBuilder() { Text = $"Event • {user.Id}" }
@@ -150,7 +150,7 @@ namespace OrangeBot
         {
             await _SendEmbed(new EmbedBuilder()
             {
-                Author = new EmbedAuthorBuilder() { Name = user.Username, IconUrl = user.GetAvatarUrl() },
+                Author = new EmbedAuthorBuilder() { Name = _GetUserName(user), IconUrl = user.GetAvatarUrl() },
                 Description = "User banned",
                 Timestamp = DateTime.Now,
                 Footer = new EmbedFooterBuilder() { Text = $"Event • {user.Id}" }
@@ -161,7 +161,7 @@ namespace OrangeBot
         {
             await _SendEmbed(new EmbedBuilder()
             {
-                Author = new EmbedAuthorBuilder() { Name = user.Username, IconUrl = user.GetAvatarUrl() },
+                Author = new EmbedAuthorBuilder() { Name = _GetUserName(user), IconUrl = user.GetAvatarUrl() },
                 Description = "User unbanned",
                 Timestamp = DateTime.Now,
                 Footer = new EmbedFooterBuilder() { Text = $"Event • {user.Id}" }
@@ -206,6 +206,9 @@ namespace OrangeBot
 
             IMessage message = _Messages[message1.Id];
 
+            if(((SocketGuild)message.Channel).Id != (_Guild).Id)
+                return;
+                
             // return when invalid Author
             if (message.Author.Id == 0)
                 return;
@@ -215,11 +218,31 @@ namespace OrangeBot
                 && message.Attachments.Count == 0)
                 return;
 
+            // HACK!!
+            string content = message.Content;
+            foreach(Attachment a in message.Attachments)
+            {
+                string extension = a.Filename.Split('.').Last().ToLower();
+                switch(extension)
+                {
+                    case "gif":
+                    case "jpg":
+                    case "jpeg":
+                    case "png":
+                    case "webp":
+                    case "tiff":
+                    case "bmp":
+                        continue;
+                }
+
+                content += Environment.NewLine + a.ProxyUrl;
+            }
+
             await _SendEmbed(new EmbedBuilder()
             {
-                Author = new EmbedAuthorBuilder() { Name = message.Author.Username, IconUrl = message.Author.GetAvatarUrl() },
-                Description = message.Content,
-                ImageUrl = message.Attachments.Count != 0 ? message.Attachments.First().ProxyUrl : null,
+                Author = new EmbedAuthorBuilder() { Name = _GetUserName(message.Author), IconUrl = message.Author.GetAvatarUrl() },
+                Description = content,
+                ImageUrl = message.Attachments.Count != 0 ? message.Attachments.First().ProxyUrl : null, 
                 Timestamp = message.Timestamp,
                 Footer = new EmbedFooterBuilder() { Text = $"deleted • #{channel.Name}" }
             }, _AuditLogChannel);
@@ -255,11 +278,11 @@ namespace OrangeBot
             
             await _SendEmbed(new EmbedBuilder()
             {
-                Author = new EmbedAuthorBuilder() { Name = msg.Author.Username, IconUrl = msg.Author.GetAvatarUrl() },
+                Author = new EmbedAuthorBuilder() { Name = _GetUserName(msg.Author), IconUrl = msg.Author.GetAvatarUrl() },
                 Description = msg.Content,
                 ImageUrl = msg.Attachments.Count != 0 ? msg.Attachments.First().ProxyUrl : null,
                 Timestamp = msg.Timestamp,
-                Footer = new EmbedFooterBuilder() { Text = message.Id.ToString() }
+                Footer = new EmbedFooterBuilder() { Text = $"#{msg.Channel.Name} • {message.Id}" }
             }, _PinMessageChannel);
 
             lock (_PinnedMessagesLock)
@@ -274,5 +297,7 @@ namespace OrangeBot
         {
             await channel.SendMessageAsync(embed: eBuilder.Build());
         }
+
+        private string _GetUserName(IUser user) => $"{user.Username}#{user.Discriminator}";
     }
 }
