@@ -32,7 +32,7 @@ namespace OrangeBot
             _PinEmote = new Emoji("📌");
             _PinnedMessages = new List<ulong>();
             _PinnedMessagesLock = new object();
-            _PinEmoteCount = 4;
+            _PinEmoteCount = 3;
 
             _Configuration =
                 JsonConvert.DeserializeObject<OrangeBotConfiguration>
