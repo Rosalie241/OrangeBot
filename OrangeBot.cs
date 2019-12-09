@@ -206,9 +206,6 @@ namespace OrangeBot
 
             IMessage message = _Messages[message1.Id];
 
-            if(((SocketGuild)message.Channel).Id != (_Guild).Id)
-                return;
-                
             // return when invalid Author
             if (message.Author.Id == 0)
                 return;
