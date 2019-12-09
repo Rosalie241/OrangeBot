@@ -1,0 +1,10 @@
+{
+  "Token": "",
+  "Servers": [
+    {
+      "Guild": 0,
+      "PinChannel": 0,
+      "AuditLogChannel": 0
+    }
+  ]
+}
