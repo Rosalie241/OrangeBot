@@ -87,7 +87,7 @@ namespace OrangeBot
             }
 
             _PinMessageChannels.ToList().ForEach(async c =>
-                (await c.Value.GetMessagesAsync().FlattenAsync()).ToList().ForEach(m =>
+                (await c.Value.GetMessagesAsync(1000).FlattenAsync()).ToList().ForEach(m =>
                     m.Embeds.ToList().ForEach(e =>
                         {
                             string text = e.Footer.Value.Text;
