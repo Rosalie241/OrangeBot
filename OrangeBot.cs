@@ -298,7 +298,7 @@ namespace OrangeBot
 
             await _SendEmbed(new EmbedBuilder()
             {
-                Author = new EmbedAuthorBuilder() { Name = _GetUserName(msg.Author), IconUrl = msg.Author.GetAvatarUrl() },
+                Author = new EmbedAuthorBuilder() { Name = _GetUserName(msg.Author), IconUrl = msg.Author.GetAvatarUrl(), Url = msg.GetJumpUrl() },
                 Description = msg.Content,
                 ImageUrl = msg.Attachments.Count != 0 ? msg.Attachments.First().ProxyUrl : null,
                 Timestamp = msg.Timestamp,
