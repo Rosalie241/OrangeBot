@@ -27,10 +27,10 @@ jobs:
       run: docker push tim241/orangebot
         
     - name: Update kubernetes deployment file
-      run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|tim241/orangebot:'${TAG}'|' $GITHUB_WORKSPACE/OrangeBotDeployment.yaml
+      run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|tim241/orangebot:'${TAG}'|' $GITHUB_WORKSPACE/Deployment/Kubernetes.yaml
     
     - name: Update kubernetes deployment docker pass
-      run: sed -i 's|<KUBEDOCKERPASS>|'${{ secrets.KUBERNETES_DOCKER_AUTH }}'|' $GITHUB_WORKSPACE/OrangeBotDeployment.yaml
+      run: sed -i 's|<KUBEDOCKERPASS>|'${{ secrets.KUBERNETES_DOCKER_AUTH }}'|' $GITHUB_WORKSPACE/Deployment/Kubernetes.yaml
       
     - name: Pull DigitalOcean kubeconfig
       uses: digitalocean/action-doctl@master
@@ -42,7 +42,7 @@ jobs:
     - name: Deploy updated deployment to DigitalOcean
       uses: docker://lachlanevenson/k8s-kubectl
       with:
-        args: --kubeconfig=/github/workspace/.kubeconfig apply -f /github/workspace/OrangeBotDeployment.yaml
+        args: --kubeconfig=/github/workspace/.kubeconfig apply -f /github/workspace/Deployment/Kubernetes.yaml
         
     - name: Verify OrangeBot deployment
       uses: docker://lachlanevenson/k8s-kubectl

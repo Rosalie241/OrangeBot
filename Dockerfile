@@ -3,11 +3,11 @@ WORKDIR /app
 
 # Copy everything and build
 COPY . ./
-RUN dotnet publish -c Release -o out
+RUN dotnet publish OrangeBot/OrangeBot.csproj -c Release -o out
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/core/runtime:3.1
 WORKDIR /app
 COPY --from=build-env /app/out .
-COPY --from=build-env /app/config-server.json ./config.json
-ENTRYPOINT ["dotnet", "OrangeBot.dll"]
+COPY --from=build-env /app/Deployment/config.json ./config.json
+ENTRYPOINT ["./OrangeBot"]

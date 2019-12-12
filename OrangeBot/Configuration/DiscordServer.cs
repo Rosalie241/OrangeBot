@@ -1,4 +1,4 @@
-namespace OrangeBot
+namespace OrangeBot.Configuration
 {
     public class DiscordServer
     {

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
+using OrangeBot.Configuration;
 
 namespace OrangeBot
 {
@@ -19,7 +20,7 @@ namespace OrangeBot
         private int _PinEmoteCount { get; set; }
         private int _PinnedListLimit { get; set; }
 
-        private OrangeBotConfiguration _Configuration { get; set; }
+        private BotConfiguration _Configuration { get; set; }
         private ConcurrentDictionary<ulong, SocketGuild> _Guilds { get; set; }
         private ConcurrentDictionary<ulong, IMessageChannel> _PinMessageChannels { get; set; }
         private ConcurrentDictionary<ulong, IMessageChannel> _AuditLogChannels { get; set; }
@@ -37,7 +38,7 @@ namespace OrangeBot
             _PinnedListLimit = 1000;
 
             _Configuration =
-                JsonConvert.DeserializeObject<OrangeBotConfiguration>
+                JsonConvert.DeserializeObject<BotConfiguration>
                     (File.ReadAllText(configuration));
 
             _Guilds = new ConcurrentDictionary<ulong, SocketGuild>();
