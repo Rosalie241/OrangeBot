@@ -29,10 +29,10 @@ namespace OrangeBot
     public class OrangeBot
     {
         private DiscordSocketClient _Client { get; set; }
-        private Emoji _PinEmote { get; set; }
+        private ConcurrentDictionary<ulong, Emoji> _PinEmotes { get; set; }
+        private ConcurrentDictionary<ulong, int> _PinEmoteCount { get; set; }
         private List<ulong> _PinnedMessages { get; set; }
         private object _PinnedMessagesLock { get; set; }
-        private int _PinEmoteCount { get; set; }
         private int _PinnedListLimit { get; set; }
 
         private BotConfiguration _Configuration { get; set; }
@@ -46,10 +46,12 @@ namespace OrangeBot
         public OrangeBot(string configuration)
         {
             _Client = new DiscordSocketClient();
-            _PinEmote = new Emoji("📌");
+
+            _PinEmotes = new ConcurrentDictionary<ulong, Emoji>();
+            _PinEmoteCount = new ConcurrentDictionary<ulong, int>();
+
             _PinnedMessages = new List<ulong>();
             _PinnedMessagesLock = new object();
-            _PinEmoteCount = 3;
             _PinnedListLimit = 1000;
 
             _Configuration =
@@ -63,8 +65,14 @@ namespace OrangeBot
             // _OnReady will init this value correctly
             _DictionaryLimit = 0;
 
-
             _Messages = new ConcurrentDictionary<ulong, IMessage>();
+
+            // init emote stuff
+            foreach (DiscordServer server in _Configuration.Servers)
+            {
+                _PinEmotes[server.Guild] = new Emoji(server.PinEmote);
+                _PinEmoteCount[server.Guild] = server.PinEmoteCount;
+            }
 
             BotMain().GetAwaiter().GetResult();
         }
@@ -276,11 +284,16 @@ namespace OrangeBot
 
         private async Task _OnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            // return when it's not the emote we need
-            if (reaction.Emote.Name != _PinEmote.Name)
-                return;
 
             ulong currentGuild = ((SocketGuildChannel)channel).Guild.Id;
+
+            // return when currentGuild isn't in _PinEmotes
+            if (!_PinEmotes.ContainsKey(currentGuild))
+                return;
+
+            // return when it's not the emote we need
+            if (_PinEmotes[currentGuild].Name != reaction.Emote.Name)
+                return;
 
             // return when it's in a Pin channel
             if (_PinMessageChannels[currentGuild].Id == channel.Id)
@@ -293,11 +306,11 @@ namespace OrangeBot
             if (msg.Timestamp <= DateTime.Now.AddHours(-24))
                 return;
 
-            int emoteCount = (await msg.GetReactionUsersAsync(_PinEmote, _PinEmoteCount).FlattenAsync()).Count();
+            int emoteCount = (await msg.GetReactionUsersAsync(_PinEmotes[currentGuild], _PinEmoteCount[currentGuild]).FlattenAsync()).Count();
 
             lock (_PinnedMessagesLock)
             {
-                if (emoteCount < _PinEmoteCount
+                if (emoteCount < _PinEmoteCount[currentGuild]
                     || _PinnedMessages.Contains(message.Id))
                 {
                     return;
