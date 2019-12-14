@@ -59,8 +59,8 @@ namespace OrangeBot.Behaviours
             if (msg.Timestamp <= DateTime.Now.AddHours(-24))
                 return;
 
-            int emoteCount = (await msg.GetReactionUsersAsync(_StarEmote[currentGuild],
-                                _StarEmoteAmount[currentGuild]).FlattenAsync()).Count();
+            int emoteCount = (msg.GetReactionUsersAsync(_StarEmote[currentGuild],
+                                _StarEmoteAmount[currentGuild]).FlattenAsync()).Result.Count();
 
 
             // once we have less emotes than required

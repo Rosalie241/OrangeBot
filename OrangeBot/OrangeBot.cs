@@ -18,6 +18,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -63,77 +64,119 @@ namespace OrangeBot
             _Client.UserJoined += _OnUserJoined;
             _Client.Ready += _OnReady;
 
+            // make sure all Exceptions are logged
+            AppDomain.CurrentDomain.FirstChanceException += _LogException;
+
             await _Client.LoginAsync(TokenType.Bot, _Configuration.Token);
             await _Client.StartAsync();
 
             await Task.Delay(-1);
         }
 
+        private string _GetDateTime() =>  DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
         private Task _Log(LogMessage message)
         {
             if (!String.IsNullOrEmpty(message.Message))
-                Console.WriteLine($"[Discord.Net:{message.Severity}] {message.Message}");
+            {
+                Console.WriteLine($"[Discord.Net:{message.Severity}@{_GetDateTime()}] {message.Message}");
+            }
 
             return Task.CompletedTask;
         }
-        
+
+        private void _LogException(object source, FirstChanceExceptionEventArgs e)
+        {
+            Console.WriteLine($"[EXCEPTION@{_GetDateTime()}] {e.Exception.Message}");
+            Console.WriteLine(e.Exception.StackTrace);
+        }
+
         private Task _OnReady()
         {
-            _BotBehaviours.ForEach(b => b.OnReady());
+            _BotBehaviours.ForEach(b =>
+            {
+                Task.Run(() => b.OnReady());
+            });
             return Task.CompletedTask;
         }
 
         private Task _OnUserJoined(SocketGuildUser user)
         {
-            _BotBehaviours.ForEach(b => b.OnUserJoined(user));
+            _BotBehaviours.ForEach(b =>
+            {
+                Task.Run(() => b.OnUserJoined(user));
+            });
             return Task.CompletedTask;
         }
 
         private Task _OnUserLeft(SocketGuildUser user)
         {
-            _BotBehaviours.ForEach(b => b.OnUserLeft(user));
+            _BotBehaviours.ForEach(b =>
+            {
+                Task.Run(() => b.OnUserLeft(user));
+            });
             return Task.CompletedTask;
         }
 
         private Task _OnUserBanned(SocketUser user, SocketGuild guild)
         {
-            _BotBehaviours.ForEach(b => b.OnUserBanned(user, guild));
+            _BotBehaviours.ForEach(b =>
+            {
+                Task.Run(() => b.OnUserBanned(user, guild));
+            });
             return Task.CompletedTask;
         }
 
         private Task _OnUserUnbanned(SocketUser user, SocketGuild guild)
         {
-            _BotBehaviours.ForEach(b => b.OnUserUnbanned(user, guild));
+            _BotBehaviours.ForEach(b =>
+            {
+                Task.Run(() => b.OnUserUnbanned(user, guild));
+            });
             return Task.CompletedTask;
         }
 
         private Task _OnBulkMessagesDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> messages, ISocketMessageChannel channel)
         {
-            _BotBehaviours.ForEach(b => b.OnBulkMessagesDeleted(messages, channel));
+            _BotBehaviours.ForEach(b =>
+            {
+                Task.Run(() => b.OnBulkMessagesDeleted(messages, channel));
+            });
             return Task.CompletedTask;
         }
 
         private Task _OnMessageUpdated(Cacheable<IMessage, ulong> message, SocketMessage sMessage, ISocketMessageChannel channel)
         {
-            _BotBehaviours.ForEach(b => b.OnMessageUpdated(message.GetOrDownloadAsync().Result, sMessage, channel));
+            _BotBehaviours.ForEach(b =>
+            {
+                Task.Run(() => b.OnMessageUpdated(message.GetOrDownloadAsync().Result, sMessage, channel));
+            });
             return Task.CompletedTask;
         }
 
         private Task _OnMessageReceived(SocketMessage message)
         {
-            _BotBehaviours.ForEach(b => b.OnMessageReceived(message));
+            _BotBehaviours.ForEach(b =>
+            {
+                Task.Run(() => b.OnMessageReceived(message));
+            });
             return Task.CompletedTask;
         }
 
         private Task _OnMessageDeleted(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
         {
-            _BotBehaviours.ForEach(b => b.OnMessageDeleted(message, channel));
+            _BotBehaviours.ForEach(b =>
+            {
+                Task.Run(() => b.OnMessageDeleted(message, channel));
+            });
             return Task.CompletedTask;
         }
 
         private Task _OnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            _BotBehaviours.ForEach(b => b.OnReactionAdded(message.GetOrDownloadAsync().Result, channel, reaction));
+            _BotBehaviours.ForEach(b =>
+            {
+                Task.Run(() => b.OnReactionAdded(message.GetOrDownloadAsync().Result, channel, reaction));
+            });
             return Task.CompletedTask;
         }
     }
