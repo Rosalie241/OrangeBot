@@ -36,12 +36,51 @@ namespace OrangeBot.Behaviours
 
         public Task OnMessageReceived(SocketMessage message) => Task.CompletedTask;
 
-        public Task OnMessageUpdated(Cacheable<IMessage, ulong> oldMessage,
+        public async Task OnMessageUpdated(Cacheable<IMessage, ulong> oldMessage,
                                      SocketMessage newMessage,
-                                     ISocketMessageChannel channel) => Task.CompletedTask;
+                                     ISocketMessageChannel channel)
+        {
+            // return when oldMessage has no value
+            if (!oldMessage.HasValue)
+                return;
+
+            // return when message is empty
+            if (String.IsNullOrEmpty(newMessage.Content)
+                && newMessage.Attachments.Count == 0)
+                return;
+
+            ulong currentGuild = ((SocketGuildChannel)channel).Guild.Id;
+
+            await DiscordHelper.SendEmbed(new EmbedBuilder()
+            {
+                Author = new EmbedAuthorBuilder()
+                {
+                    Name = DiscordHelper.GetUserName(newMessage.Author),
+                    IconUrl = newMessage.Author.GetAvatarUrl()
+                },
+                Fields = {
+                    new EmbedFieldBuilder()
+                    {
+                        Name = "Old Message",
+                        Value = DiscordHelper.GetMessageContent(oldMessage.Value)
+                    },
+                    new EmbedFieldBuilder()
+                    {
+                        Name = "New Message",
+                        Value = DiscordHelper.GetMessageContent(newMessage)
+                    }
+                },
+                Timestamp = newMessage.Timestamp,
+                Footer = new EmbedFooterBuilder() { Text = $"edited • #{channel.Name}" }
+            }, _AuditLogChannel[currentGuild]);
+        }
 
         public async Task OnMessageDeleted(Cacheable<IMessage, ulong> msg, ISocketMessageChannel channel)
         {
+            // return when msg has no value
+            if (!msg.HasValue)
+                return;
+
             IMessage message = msg.GetOrDownloadAsync().Result;
 
             // return when message is empty
