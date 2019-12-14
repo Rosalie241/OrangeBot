@@ -37,7 +37,7 @@ namespace OrangeBot.Behaviours
 
         public Task OnMessageReceived(SocketMessage message) => Task.CompletedTask;
 
-        public Task OnMessageUpdated(IMessage message, SocketMessage sMessage, ISocketMessageChannel channel) => Task.CompletedTask;
+        public Task OnMessageUpdated(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel) => Task.CompletedTask;
 
         public async Task OnReactionAdded(IUserMessage msg, ISocketMessageChannel channel, SocketReaction reaction)
         {

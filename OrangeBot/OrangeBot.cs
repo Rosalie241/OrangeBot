@@ -150,11 +150,11 @@ namespace OrangeBot
             return Task.CompletedTask;
         }
 
-        private Task _OnMessageUpdated(Cacheable<IMessage, ulong> message, SocketMessage sMessage, ISocketMessageChannel channel)
+        private Task _OnMessageUpdated(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel)
         {
             _BotBehaviours.ForEach(b =>
             {
-                Task.Run(() => b.OnMessageUpdated(message.GetOrDownloadAsync().Result, sMessage, channel));
+                Task.Run(() => b.OnMessageUpdated(oldMessage, newMessage, channel));
             });
             return Task.CompletedTask;
         }

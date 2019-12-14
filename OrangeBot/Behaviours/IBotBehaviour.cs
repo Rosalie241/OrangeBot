@@ -9,7 +9,7 @@ namespace OrangeBot.Behaviours
     {
         Task OnReady();
         Task OnMessageReceived(SocketMessage message);
-        Task OnMessageUpdated(IMessage message, SocketMessage sMessage, ISocketMessageChannel channel);
+        Task OnMessageUpdated(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel);
         Task OnMessageDeleted(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel);
         Task OnReactionAdded(IUserMessage message, ISocketMessageChannel channel, SocketReaction reaction);
         Task OnBulkMessagesDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> messages, ISocketMessageChannel channel);
@@ -17,6 +17,5 @@ namespace OrangeBot.Behaviours
         Task OnUserLeft(SocketGuildUser user);
         Task OnUserBanned(SocketUser user, SocketGuild guild);
         Task OnUserUnbanned(SocketUser user, SocketGuild guild);
-
     }
 }
