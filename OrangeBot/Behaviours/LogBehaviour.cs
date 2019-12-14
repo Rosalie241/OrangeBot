@@ -58,6 +58,12 @@ namespace OrangeBot.Behaviours
                 newMessage.Embeds.Count > 0)
                 return;
 
+            // Amazing API design Part 2:
+            // when a message is pinned/unpinned,
+            // Discord also sends the MessageUpdated event!
+            if (oldMessage.Value.IsPinned != newMessage.IsPinned)
+                return;
+
             ulong currentGuild = ((SocketGuildChannel)channel).Guild.Id;
 
             // return when the message isn't in the configured guilds
