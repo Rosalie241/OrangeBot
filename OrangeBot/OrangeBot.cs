@@ -35,7 +35,13 @@ namespace OrangeBot
         private List<IBotBehaviour> _BotBehaviours { get; set; }
         public OrangeBot(string configuration)
         {
-            _Client = new DiscordSocketClient();
+            // make sure we enabled the cache
+            DiscordSocketConfig config = new DiscordSocketConfig()
+            {
+                MessageCacheSize = 50000
+            };
+
+            _Client = new DiscordSocketClient(config);
 
             _Configuration =
                 JsonConvert.DeserializeObject<BotConfiguration>
@@ -73,7 +79,7 @@ namespace OrangeBot
             await Task.Delay(-1);
         }
 
-        private string _GetDateTime() =>  DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+        private string _GetDateTime() => DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
         private Task _Log(LogMessage message)
         {
             if (!String.IsNullOrEmpty(message.Message))
