@@ -44,24 +44,8 @@ namespace OrangeBot.Behaviours
             if (!oldMessage.HasValue)
                 return;
 
-            // Amazing API design Part 1:
-            // when there's an embed,
-            // the Discord API will send the metadata
-            // and apply it with a MessageUpdated event,
-            // without modifying the Timestamp
-            //
-            // https://github.com/Rapptz/discord.py/issues/273#issuecomment-239647478
-            //
-            // so to combat this 'intended behaviour'
-            // we just return once there are *any* embeds in the message
-            if (oldMessage.Value.Embeds.Count > 0 ||
-                newMessage.Embeds.Count > 0)
-                return;
-
-            // Amazing API design Part 2:
-            // when a message is pinned/unpinned,
-            // Discord also sends the MessageUpdated event!
-            if (oldMessage.Value.IsPinned != newMessage.IsPinned)
+            // return when the message contents are the same
+            if(oldMessage.Value.Content == newMessage.Content)
                 return;
 
             ulong currentGuild = ((SocketGuildChannel)channel).Guild.Id;
