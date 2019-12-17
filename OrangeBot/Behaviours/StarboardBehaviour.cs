@@ -39,7 +39,7 @@ namespace OrangeBot.Behaviours
 
         public Task OnMessageUpdated(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel) => Task.CompletedTask;
 
-        public async Task OnReactionAdded(IUserMessage msg, ISocketMessageChannel channel, SocketReaction reaction)
+        public async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
             ulong currentGuild = ((SocketGuildChannel)channel).Guild.Id;
 
@@ -53,6 +53,12 @@ namespace OrangeBot.Behaviours
 
             // return when it's in a StarBoard channel
             if (_StarBoardMessageChannel[currentGuild].Id == channel.Id)
+                return;
+
+            IUserMessage msg = message.GetOrDownloadAsync().Result;
+
+            // return when we failed to retrieve the message
+            if (msg == null)
                 return;
 
             // discard everything that's >=24 hours old

@@ -11,7 +11,7 @@ namespace OrangeBot.Behaviours
         Task OnMessageReceived(SocketMessage message);
         Task OnMessageUpdated(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel);
         Task OnMessageDeleted(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel);
-        Task OnReactionAdded(IUserMessage message, ISocketMessageChannel channel, SocketReaction reaction);
+        Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction);
         Task OnBulkMessagesDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> messages, ISocketMessageChannel channel);
         Task OnUserJoined(SocketGuildUser user);
         Task OnUserLeft(SocketGuildUser user);

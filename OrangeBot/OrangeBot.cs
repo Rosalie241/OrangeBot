@@ -181,7 +181,7 @@ namespace OrangeBot
         {
             _BotBehaviours.ForEach(b =>
             {
-                Task.Run(() => b.OnReactionAdded(message.GetOrDownloadAsync().Result, channel, reaction));
+                Task.Run(() => b.OnReactionAdded(message, channel, reaction));
             });
             return Task.CompletedTask;
         }

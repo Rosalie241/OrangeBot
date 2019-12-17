@@ -112,7 +112,7 @@ namespace OrangeBot.Behaviours
             }, _AuditLogChannel[currentGuild]);
         }
 
-        public Task OnReactionAdded(IUserMessage message,
+        public Task OnReactionAdded(Cacheable<IUserMessage, ulong> message,
                                     ISocketMessageChannel channel,
                                     SocketReaction reaction) => Task.CompletedTask;
 
