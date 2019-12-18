@@ -33,14 +33,6 @@ namespace OrangeBot.Behaviours
             this._StarredMessagesLimitPerGuild = 1000;
         }
 
-        public Task OnBulkMessagesDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> messages, ISocketMessageChannel channel) => Task.CompletedTask;
-
-        public Task OnMessageDeleted(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel) => Task.CompletedTask;
-
-        public Task OnMessageReceived(SocketMessage message) => Task.CompletedTask;
-
-        public Task OnMessageUpdated(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel) => Task.CompletedTask;
-
         public async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
             ulong currentGuild = ((SocketGuildChannel)channel).Guild.Id;
@@ -145,13 +137,5 @@ namespace OrangeBot.Behaviours
 
             return Task.CompletedTask;
         }
-
-        public Task OnUserBanned(SocketUser user, SocketGuild guild) => Task.CompletedTask;
-
-        public Task OnUserJoined(SocketGuildUser user) => Task.CompletedTask;
-
-        public Task OnUserLeft(SocketGuildUser user) => Task.CompletedTask;
-
-        public Task OnUserUnbanned(SocketUser user, SocketGuild guild) => Task.CompletedTask;
     }
 }

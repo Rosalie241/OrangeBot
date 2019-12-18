@@ -34,7 +34,6 @@ namespace OrangeBot.Behaviours
             return Task.CompletedTask;
         }
 
-        public Task OnMessageReceived(SocketMessage message) => Task.CompletedTask;
 
         public async Task OnMessageUpdated(Cacheable<IMessage, ulong> oldMessage,
                                      SocketMessage newMessage,
@@ -111,10 +110,6 @@ namespace OrangeBot.Behaviours
                 Footer = new EmbedFooterBuilder() { Text = $"Deleted • #{channel.Name}" }
             }, _AuditLogChannel[currentGuild]);
         }
-
-        public Task OnReactionAdded(Cacheable<IUserMessage, ulong> message,
-                                    ISocketMessageChannel channel,
-                                    SocketReaction reaction) => Task.CompletedTask;
 
         public async Task OnBulkMessagesDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> messages,
                                           ISocketMessageChannel channel)
