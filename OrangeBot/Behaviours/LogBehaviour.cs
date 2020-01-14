@@ -27,8 +27,13 @@ namespace OrangeBot.Behaviours
             // init _AuditLogChannel
             foreach (DiscordServer server in _Configuration.Servers)
             {
-                _AuditLogChannel[server.Guild] =
-                    (IMessageChannel)_Client.GetChannel(server.AuditLogChannel);
+                var auditLogChannel = _Client.GetChannel(server.AuditLogChannel) as IMessageChannel;
+
+                // skip 'server' when we can't find the AuditLogChannel
+                if(auditLogChannel == null)
+                    continue;
+
+                _AuditLogChannel[server.Guild] = auditLogChannel;
             }
 
             return Task.CompletedTask;
