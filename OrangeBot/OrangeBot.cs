@@ -52,17 +52,10 @@ namespace OrangeBot
             _BotBehaviours.Add(new Behaviours.LogBehaviour(_Client, _Configuration));
             _BotBehaviours.Add(new Behaviours.StarboardBehaviour(_Client, _Configuration));
 
-            List<Task> botList = new List<Task>();
-
-            foreach(string token in _Configuration.Tokens)
-            {
-                botList.Add(BotMain(token));
-            }
-
-            Task.WaitAll(botList.ToArray());
+            BotMain().GetAwaiter().GetResult();
         }
 
-        private async Task BotMain(string token)
+        private async Task BotMain()
         {
             // hook up all events
             _Client.Log += _Log;
@@ -80,7 +73,10 @@ namespace OrangeBot
             // make sure all Exceptions are logged
             AppDomain.CurrentDomain.FirstChanceException += _LogException;
 
-            await _Client.LoginAsync(TokenType.Bot, token);
+            // login with each token
+            foreach(string token in _Configuration.Tokens)
+                await _Client.LoginAsync(TokenType.Bot, token);
+            
             await _Client.StartAsync();
 
             await Task.Delay(-1);
