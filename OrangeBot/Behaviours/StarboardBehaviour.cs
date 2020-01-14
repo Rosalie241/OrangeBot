@@ -153,7 +153,7 @@ namespace OrangeBot.Behaviours
                 _StarEmoteAmount[server.Guild] = server.StarEmoteCount;
 
                 _StarBoardMessageChannel[server.Guild] =
-                        (IMessageChannel)_Client.GetChannel(server.PinChannel);
+                        (IMessageChannel)_Client.GetChannel(server.StarChannel);
 
                 _StarredMessages[server.Guild] = new List<ulong>();
             }

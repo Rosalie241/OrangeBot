@@ -5,7 +5,7 @@
   "Servers": [
     {
       "Guild": 0,
-      "PinChannel": 0,
+      "StarChannel": 0,
       "AuditLogChannel": 0,
       "StarEmote": "★",
       "StarEmoteCount": 1
