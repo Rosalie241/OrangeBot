@@ -45,7 +45,7 @@ namespace OrangeBot
 
             _Configuration =
                 JsonConvert.DeserializeObject<BotConfiguration>
-                    (File.ReadAllText(configuration));
+                    (configuration);
 
             _BotBehaviours = new List<IBotBehaviour>();
 

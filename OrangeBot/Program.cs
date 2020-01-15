@@ -14,11 +14,20 @@
 */
 
 using System;
+using System.IO;
 
 namespace OrangeBot
 {
     class Program
     {
-        static void Main(string[] args) => new OrangeBot("config.json");
+        static void Main(string[] args)
+        {
+            string config = Environment.GetEnvironmentVariable("ORANGEBOT_CONFIG");
+
+            if(String.IsNullOrEmpty(config))
+                config = File.ReadAllText("config.json");
+
+            new OrangeBot(config);
+        }
     }
 }
