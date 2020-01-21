@@ -130,7 +130,7 @@ namespace OrangeBot.Behaviours
 
                 // wait 1 minute
                 // do note that there's an API limit
-                // we can only access the API 100k times per day
+                // we can only access this API 100k times per day
                 Thread.Sleep(1000 * 60);
             }
         }
