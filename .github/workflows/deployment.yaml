@@ -47,8 +47,10 @@ jobs:
         
     - name: Deploy updated deployment to DigitalOcean
       uses: docker://lachlanevenson/k8s-kubectl
+      env:
+        TEST: TEST
       with:
-        args: --kubeconfig=NA/.kubeconfig apply -f /github/workspace/Deployment/Kubernetes.yaml
+        args: --kubeconfig=/github/workspace/.kubeconfig apply -f /github/workspace/Deployment/Kubernetes.yaml
         
     - name: Verify OrangeBot deployment
       uses: docker://lachlanevenson/k8s-kubectl
