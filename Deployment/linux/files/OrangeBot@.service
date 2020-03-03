@@ -1,0 +1,13 @@
+[Unit]
+Description=Discord Bot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=orangebot
+Type=exec
+ExecStart=@DEPLOY_LOCATION@/OrangeBot @CONFIG_LOCATION@/%I
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
